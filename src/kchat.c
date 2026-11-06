@@ -31,6 +31,8 @@
 #include <string.h>
 #include <sys/select.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
+#include <time.h>
 #include <unistd.h>
 #include <stdbool.h>
 
@@ -42,6 +44,17 @@ static int bufsize = BUF_SIZE;
 static char *motd = MOTD;
 
 client_t *clients[MAX_CLIENTS];
+
+typedef struct {
+	time_t when;
+	int color;
+	char nick[17];
+	char msg[BUF_SIZE + 1];
+} history_t;
+
+/* Oldest message first. Only public messages are stored, never DMs. */
+static history_t history[HISTORY_LINES];
+static int history_count = 0;
 #ifdef IPV4_ADDR
 int sockfd_v4;
 #endif
@@ -70,6 +83,88 @@ void quit()
 	exit(0);
 }
 
+
+static void history_push(time_t when, int color, const char *nick, const char *msg)
+{
+	if (history_count == HISTORY_LINES) {
+		memmove(&history[0], &history[1], sizeof(history_t) * (HISTORY_LINES - 1));
+		history_count--;
+	}
+	history_t *h = &history[history_count++];
+	h->when = when;
+	h->color = color;
+	snprintf(h->nick, sizeof(h->nick), "%s", nick);
+	snprintf(h->msg, sizeof(h->msg), "%s", msg);
+}
+
+/* Rewrite the whole file: it only ever holds HISTORY_LINES lines. */
+static void history_save(void)
+{
+	FILE *fp = fopen(HISTORY_FILE_TMP, "w");
+	if (fp == NULL) {
+		perror("fopen");
+		return;
+	}
+	chmod(HISTORY_FILE_TMP, 0600);
+	for (int i = 0; i < history_count; i++)
+		fprintf(fp, "%ld\t%d\t%s\t%s\n", (long)history[i].when,
+		    history[i].color, history[i].nick, history[i].msg);
+	fclose(fp);
+	rename(HISTORY_FILE_TMP, HISTORY_FILE);
+}
+
+void history_load(void)
+{
+	FILE *fp = fopen(HISTORY_FILE, "r");
+	char *line = NULL;
+	size_t cap = 0;
+	ssize_t n;
+
+	if (fp == NULL)
+		return;
+	while ((n = getline(&line, &cap, fp)) != -1) {
+		if (n > 0 && line[n - 1] == '\n')
+			line[n - 1] = '\0';
+		/* Line format: time <TAB> color <TAB> nick <TAB> message */
+		char *t1 = strchr(line, '\t');
+		char *t2 = t1 ? strchr(t1 + 1, '\t') : NULL;
+		char *t3 = t2 ? strchr(t2 + 1, '\t') : NULL;
+		if (t3 == NULL)
+			continue;
+		*t1 = *t2 = *t3 = '\0';
+		history_push((time_t)atol(line), atoi(t1 + 1), t2 + 1, t3 + 1);
+	}
+	free(line);
+	fclose(fp);
+}
+
+void history_add(int color, const char *nick, const char *msg)
+{
+	history_push(time(NULL), color, nick, msg);
+	history_save();
+}
+
+void history_send(int id)
+{
+	time_t now = time(NULL);
+	struct tm tm_now, tm;
+
+	if (history_count == 0)
+		return;
+	localtime_r(&now, &tm_now);
+	server_send(ONLY, -1, id, "\r\e[34m * Last %d messages:\e[0m\n", history_count);
+	for (int i = 0; i < history_count; i++) {
+		char stamp[16];
+		localtime_r(&history[i].when, &tm);
+		/* Show the date too when the message is not from today. */
+		strftime(stamp, sizeof(stamp),
+		    (tm.tm_yday == tm_now.tm_yday && tm.tm_year == tm_now.tm_year) ? "%H:%M" : "%d/%m %H:%M",
+		    &tm);
+		server_send(ONLY, -1, id, "\r\e[2m[%s]\e[0m \e[1;%dm%s\e[0m: %s\n",
+		    stamp, history[i].color, history[i].nick, history[i].msg);
+	}
+	server_send(ONLY, -1, id, "\r\e[34m * ---\e[0m\n");
+}
 
 static void client_disconnect(int id)
 {
@@ -150,6 +245,8 @@ int main()
 
 	for (id = 0; id < maxclients; id++)
 		clients[id] = NULL;
+
+	history_load();
 
 	#ifdef IPV4_ADDR
 	struct sockaddr_in serv_addr4, cli_addr4;
@@ -284,9 +381,11 @@ int main()
 					if (buf[0] == '/')
 						command_handle(id, buf);
 					/* Send message. */
-					else
+					else {
+						history_add(clients[id]->color, clients[id]->nick, buf);
 						server_send(EXCEPT, id, id, "\r\e[1;%dm%s\e[0m: %s\n",
 						    clients[id]->color, clients[id]->nick, buf);
+					}
 				}
 				/* Client disconnected. */
 				else {

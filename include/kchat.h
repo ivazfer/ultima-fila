@@ -57,5 +57,8 @@ void trim(char *str);
 int nick_handle(int mode, char *nick, char *pass);
 int change_nick(int mode, int id, char *str);
 void command_handle(int id, char *str);
+void history_load(void);
+void history_add(int color, const char *nick, const char *msg);
+void history_send(int id);
 
 #endif

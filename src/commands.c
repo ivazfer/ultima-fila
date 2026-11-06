@@ -126,7 +126,8 @@ void cmd_register(int id, int argc, char *argv[])
 	}
 
 	server_send(ONLY, -1, id, "\r\e[34m * Successfully registered.\e[0m\n");
-	change_nick(REGISTER, id, argv[1]);
+	if (change_nick(REGISTER, id, argv[1]))
+		history_send(id);
 }
 
 void cmd_unregister(int id)
@@ -165,7 +166,8 @@ void cmd_login(int id, int argc, char *argv[])
 		return;
 	}
 
-	change_nick(DEFAULT, id, argv[1]);
+	if (change_nick(DEFAULT, id, argv[1]))
+		history_send(id);
 }
 
 void cmd_rules(int id, int argc, char *argv[])

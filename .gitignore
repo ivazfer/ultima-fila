@@ -2,3 +2,5 @@ kchat
 auth.txt
 *.out
 *.swp
+history.txt
+.history.txt.tmp

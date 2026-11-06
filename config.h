@@ -16,6 +16,9 @@
 #define MAX_CLIENTS 1024
 #define AUTH_FILE "auth.txt"
 #define AUTH_FILE_TMP "."AUTH_FILE".tmp"
+#define HISTORY_FILE "history.txt" /* Last public messages, kept across restarts. */
+#define HISTORY_FILE_TMP "."HISTORY_FILE".tmp"
+#define HISTORY_LINES 10
 
 #define MOTD  "\r\e[1;34m" \
 "Silencio, esto no está bien, pero suspender es peor" \
