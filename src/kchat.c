@@ -699,8 +699,6 @@ void command_handle(int id, char *str)
 		cmd_dm(id, argc, argv);
 	else if (strcmp("/users", argv[0]) == 0)
 		cmd_users(id);
-	else if (strcmp("/restart", argv[0]) == 0)
-		quit();
 	else if (strcmp("/register", argv[0]) == 0)
 		cmd_register(id, argc, argv);
 	else if (strcmp("/unregister", argv[0]) == 0)

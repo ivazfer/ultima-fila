@@ -212,7 +212,6 @@ void cmd_help(int id)
 		" * /dm\n"
 		" * /login\n"
 		" * /nick\n"
-		" * /restart\n"
 		" * /register\n"
 		" * /rules\n"
 		" * /unregister\n"

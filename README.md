@@ -44,6 +44,7 @@ Type `back-connect` to get in, then `/register nick password` (first time) or `/
 * `@nick` mentions a connected user: the mention is highlighted for everyone and the mentioned user's terminal bell rings.
 * After `/login` or `/register` you see the last 10 public messages. They are kept in `history.txt` and survive restarts.
 * `/help` lists every command.
+* There is no `/restart` command: only whoever runs the server can stop it (Ctrl+C in its terminal).
 
 ## About this version
 
@@ -60,3 +61,4 @@ The original code was written by İrem Kuyucu and Laurynas Četyrkinas (Kernal C
 * `client/ultima-fila.sh`: connects with `rlwrap` + `nc` in the alternate screen, so Ctrl+C leaves the terminal untouched.
 * Fix: accented letters (UTF-8) at the start or end of a message were being cut (`está` arrived as `est`).
 * Control characters in messages are replaced by spaces, so nobody can send terminal escape sequences to the others.
+* Removed the `/restart` command, which let any user shut the server down.
