@@ -55,6 +55,56 @@ typedef struct {
 /* Oldest message first. Only public messages are stored, never DMs. */
 static history_t history[HISTORY_LINES];
 static int history_count = 0;
+
+static int check_rules(int from_id, int to_id);
+static ssize_t server_write(int id, const void *buf, size_t count);
+
+#define MENTION_ON  "\e[1;30;43m" /* bold, black on yellow */
+#define MENTION_OFF "\e[0m"
+
+static int is_nick_char(char c)
+{
+	return isalnum((unsigned char)c) || c == '_';
+}
+
+/*
+ * Highlight every "@nick" that matches a connected user (case-insensitive).
+ * Returns a malloc'ed string. If hit is not NULL, hit[id] is set for every
+ * user that was mentioned.
+ */
+static char *render_mentions(const char *msg, bool *hit)
+{
+	size_t len = strlen(msg), o = 0;
+	/* Worst case is "@a": 2 bytes become 16 bytes with the escape codes. */
+	char *out = malloc(len * 8 + 1);
+
+	for (size_t i = 0; i < len; ) {
+		/* The '@' must not be glued to a word, so "foo@bar" is not a mention. */
+		if (msg[i] == '@' && (i == 0 || !is_nick_char(msg[i - 1]))) {
+			size_t j = i + 1;
+			while (j < len && is_nick_char(msg[j]))
+				j++;
+			size_t n = j - i - 1;
+			int who = -1;
+			for (int c = 0; n > 0 && n <= 16 && c < maxclients; c++)
+				if (clients[c] != NULL && strlen(clients[c]->nick) == n &&
+				    strncasecmp(clients[c]->nick, msg + i + 1, n) == 0) {
+					who = c;
+					break;
+				}
+			if (who != -1) {
+				if (hit != NULL)
+					hit[who] = true;
+				o += sprintf(out + o, MENTION_ON "%.*s" MENTION_OFF, (int)(j - i), msg + i);
+				i = j;
+				continue;
+			}
+		}
+		out[o++] = msg[i++];
+	}
+	out[o] = '\0';
+	return out;
+}
 #ifdef IPV4_ADDR
 int sockfd_v4;
 #endif
@@ -160,8 +210,10 @@ void history_send(int id)
 		strftime(stamp, sizeof(stamp),
 		    (tm.tm_yday == tm_now.tm_yday && tm.tm_year == tm_now.tm_year) ? "%H:%M" : "%d/%m %H:%M",
 		    &tm);
+		char *shown = render_mentions(history[i].msg, NULL);
 		server_send(ONLY, -1, id, "\r\e[2m[%s]\e[0m \e[1;%dm%s\e[0m: %s\n",
-		    stamp, history[i].color, history[i].nick, history[i].msg);
+		    stamp, history[i].color, history[i].nick, shown);
+		free(shown);
 	}
 	server_send(ONLY, -1, id, "\r\e[34m * ---\e[0m\n");
 }
@@ -382,9 +434,16 @@ int main()
 						command_handle(id, buf);
 					/* Send message. */
 					else {
+						bool hit[MAX_CLIENTS] = { false };
+						char *shown = render_mentions(buf, hit);
 						history_add(clients[id]->color, clients[id]->nick, buf);
 						server_send(EXCEPT, id, id, "\r\e[1;%dm%s\e[0m: %s\n",
-						    clients[id]->color, clients[id]->nick, buf);
+						    clients[id]->color, clients[id]->nick, shown);
+						/* Ring the bell of the mentioned users. */
+						for (int i = 0; i < maxclients; i++)
+							if (i != id && hit[i] && check_rules(id, i))
+								server_write(i, "\a", 1);
+						free(shown);
 					}
 				}
 				/* Client disconnected. */
