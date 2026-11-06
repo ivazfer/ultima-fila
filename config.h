@@ -26,6 +26,6 @@
 
 #define CONNECT_LINE_ENABLED
 #define CONNECT_LINE_INFORM_STRING
-#define CONNECT_LINE "kchat-connect"
+#define CONNECT_LINE "bkconnect"
 
 #endif

@@ -29,7 +29,7 @@ Anything that speaks TCP works (`nc`, `telnet`, PuTTY in *Raw* mode...). The nic
 rlwrap -S "> " nc HOST 1337
 ```
 
-Type `kchat-connect` to get in, then `/register nick password` (first time) or `/login nick password`.
+Type `bkconnect` to get in, then `/register nick password` (first time) or `/login nick password`.
 
 `client/ultima-fila.sh` does the same but runs the chat in the terminal's alternate screen: when you leave with **Ctrl+C** the chat disappears and your terminal is exactly as it was before.
 
