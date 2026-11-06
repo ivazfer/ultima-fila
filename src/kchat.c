@@ -264,6 +264,10 @@ int main()
 				if ((bytesread = read(clients[id]->connfd, buf, bufsize)) > 0) {
 					buf[bytesread] = '\0';
 					trim(buf);
+					/* No control characters inside a message (terminal escape injection). */
+					for (char *c = buf; *c != '\0'; c++)
+						if ((unsigned char)*c < 0x20 || *c == 0x7f)
+							*c = ' ';
 
 					/* Skip empty messages. */
 					if (strlen(buf) == 0)
@@ -477,6 +481,16 @@ int nick_handle(int mode, char *nick, char *pass)
 	return ret;
 }
 
+/*
+ * Printable for our purposes: ASCII graphic characters plus every byte of a
+ * UTF-8 multibyte sequence (accents, ñ, ¿...). Without the second part,
+ * isgraph() is false for those bytes in the C locale and trim() would cut them.
+ */
+static int is_visible(char c)
+{
+	return isgraph((unsigned char)c) || (unsigned char)c >= 0x80;
+}
+
 /* Remove leading and trailing white space characters. */
 void trim(char *str)
 {
@@ -493,7 +507,7 @@ void trim(char *str)
 	 * Trim leading non-printable (control) characters including whitespaces.
 	 * Stop at '\0' because it marks end of a string.
 	 */
-	for (i = 0; !isgraph(str[i]) && str[i] != '\0'; i++);
+	for (i = 0; !is_visible(str[i]) && str[i] != '\0'; i++);
 
 	/* Shift all trailing characters to its left. */
 	for (j = 0; str[i + j] != '\0'; j++)
@@ -503,7 +517,7 @@ void trim(char *str)
 	/* Trim trailing non-printable characters and whitespaces. */
 	i = -1;
 	for (j = 0; str[j] != '\0'; j++)
-		if (isgraph(str[j]))
+		if (is_visible(str[j]))
 			i = j;
 
 	/* Set trailing character to NULL. */

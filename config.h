@@ -18,10 +18,7 @@
 #define AUTH_FILE_TMP "."AUTH_FILE".tmp"
 
 #define MOTD  "\r\e[1;34m" \
-"  ================================\n" \
-"   \e[1mULTIMA FILA\e[0m\e[1;34m  -  the back row\n" \
-"   a classroom chat\n" \
-"  ================================\n" \
+"Silencio, esto no está bien, pero suspender es peor" \
 "\e[0m\n"
 
 #define CONNECT_LINE_ENABLED
