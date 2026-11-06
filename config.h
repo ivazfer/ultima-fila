@@ -18,14 +18,10 @@
 #define AUTH_FILE_TMP "."AUTH_FILE".tmp"
 
 #define MOTD  "\r\e[1;34m" \
-"                  __\n" \
-"               -=(o '.\n" \
-" \e[3mKernal     \e[1m      '.-.\\\n" \
-" \e[3mCommunity     \e[1m   /|  \\\\\n" \
-" \e[3m2017-ELF��@hV@8  \e[1m'|  ||\n" \
-"                  _\\_):,_\n" \
-" Segmentation fault\n" \
-"             (core dumped)" \
+"  ================================\n" \
+"   \e[1mULTIMA FILA\e[0m\e[1;34m  -  the back row\n" \
+"   a classroom chat\n" \
+"  ================================\n" \
 "\e[0m\n"
 
 #define CONNECT_LINE_ENABLED

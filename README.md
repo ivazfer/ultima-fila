@@ -1,5 +1,5 @@
-# kChat — Kernal Chat
-**kChat** or Kernal Chat is a functional chat-room server that you can connect using netcat, telnet or any TCP client.
+# Última Fila
+**Última Fila** ("the back row") is a classroom chat server based on [kChat](https://gitlab.com/kernal/kchat) (Kernal Chat). You can connect to it using netcat, telnet or any TCP client.
 
 Joining the chat is as simple as running `nc server port`.
 
@@ -18,17 +18,16 @@ To make your kernal-chat experience better, we recommend using [rlwrap](https://
 
 `rlwrap -S "> " nc server port`
 
-Still not excited?\
-Join our kChat instance available at `chat.kernal.eu 1337`.
 
 ---
 
-## Sobre esta versión
+## About this version
 
-Esta es una versión modificada de [kChat](https://gitlab.com/kernal/kchat), creada por Ismael Vázquez como proyecto personal para un chat de clase.
+This is a modified version of [kChat](https://gitlab.com/kernal/kchat), created by Ismael Vázquez as a personal project for a class chat.
 
-El código original es obra de İrem Kuyucu y Laurynas Četyrkinas (Kernal Community) y se distribuye bajo la licencia **GNU GPL v3**. Esta versión mantiene la misma licencia (ver [COPYING](COPYING)) y los avisos de copyright originales.
+The original code was written by İrem Kuyucu and Laurynas Četyrkinas (Kernal Community) and is distributed under the **GNU GPL v3**. This version keeps the same license (see [COPYING](COPYING)) and the original copyright notices.
 
-### Cambios respecto al original
+### Changes from the original
 
-_(ninguno todavía)_
+* Renamed to Última Fila; removed the reference to the original public instance.
+* New MOTD.
