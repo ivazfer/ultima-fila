@@ -20,3 +20,15 @@ To make your kernal-chat experience better, we recommend using [rlwrap](https://
 
 Still not excited?\
 Join our kChat instance available at `chat.kernal.eu 1337`.
+
+---
+
+## Sobre esta versión
+
+Esta es una versión modificada de [kChat](https://gitlab.com/kernal/kchat), creada por Ismael Vázquez como proyecto personal para un chat de clase.
+
+El código original es obra de İrem Kuyucu y Laurynas Četyrkinas (Kernal Community) y se distribuye bajo la licencia **GNU GPL v3**. Esta versión mantiene la misma licencia (ver [COPYING](COPYING)) y los avisos de copyright originales.
+
+### Cambios respecto al original
+
+_(ninguno todavía)_
